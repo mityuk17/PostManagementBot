@@ -1,5 +1,7 @@
 from routers.general import router as general_router
-from routers.user import router as user_router
-from routers.admin import router as admin_router
+from routers.channel_creation import router as channel_creation_router
+from routers.channel_management import router as channel_management_router
+from routers.post_creation import router as post_creation_router
+from routers.post_management import router as post_management_router
 
-routers_list = [general_router, user_router, admin_router]
+routers_list = [general_router, channel_creation_router, channel_management_router, post_creation_router, post_management_router]

@@ -14,7 +14,6 @@ class BotLoader:
     def __init__(self, token: str, redis_url: str, postgres_url: str):
         self.tg_bot = Bot(token=token, default=DefaultBotProperties(parse_mode="HTML", link_preview_is_disabled=True))
         self.dispatcher = Dispatcher(storage=RedisStorage.from_url(redis_url))
-        RedisJobStore()
         self.scheduler = AsyncIOScheduler(jobstores={"default": SQLAlchemyJobStore(url=postgres_url.replace("+asyncpg", ""), metadata=SQLModel.metadata)})
         self.database_manager = DatabaseManager(postgres_url)
         

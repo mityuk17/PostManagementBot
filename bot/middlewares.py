@@ -1,14 +1,18 @@
 from aiogram import BaseMiddleware
 from database.crud.user import get_user, update_user, create_user
-from schemas import User
+from database.crud.channel import autoupdate_channel_title
+from schemas import User, UserRole
 from datetime import datetime
 
 
-class UserUpdateOrCreateMiddleware(BaseMiddleware):
+class EntitiesUpdateMiddleware(BaseMiddleware):
     async def __call__(self, handler, event, data):
         try:
             tg_user = event.from_user
             user = await get_user(tg_user.id)
+            
+            if user and user.role == UserRole.Banned:
+                return
             
             if user:
                 user.username = tg_user.username
@@ -21,7 +25,14 @@ class UserUpdateOrCreateMiddleware(BaseMiddleware):
                 
         except AttributeError:
             pass
-            
+        
+        try:
+            tg_channel = event.chat
+            await autoupdate_channel_title(tg_channel.id, tg_channel.title)
+
+        except AttributeError:
+            pass
+                    
         return await handler(event, data)
     
                 

@@ -1,0 +1,5 @@
+import notifications as notifications_texts
+import post_creation as post_creation_texts
+import channel_creation as channel_creation_texts
+import general as general_texts
+import logs as logs_texts
