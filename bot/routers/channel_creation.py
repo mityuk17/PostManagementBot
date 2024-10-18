@@ -72,7 +72,7 @@ async def get_channel_id(message: Message, state: FSMContext):
     await state.clear()
     
     await message.answer(
-        text=channel_creation_texts.channel_created(),
+        text=channel_creation_texts.channel_created(new_channel.title),
         reply_markup=GeneralInlineKeyboard.back()
     )
             

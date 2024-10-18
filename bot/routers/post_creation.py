@@ -2,10 +2,8 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from database.crud.channel import get_channel, all_channels
-from database.crud.post import create_post, update_post
-from database.crud.user import get_user
+from database.crud.post import create_post
 from states import PostCreation
-from schemas import Channel, Post
 from texts import post_creation_texts
 from keyboards import GeneralInlineKeyboard, PostCreationInlineKeyboard
 from services.utils import is_url
@@ -39,7 +37,7 @@ async def get_channel_id(callback: CallbackQuery, state: FSMContext):
     channel = await get_channel(channel_id)
     
     await state.update_data({"target_channel_id": channel_id})
-    await state.set_data(PostCreation.messages)
+    await state.set_state(PostCreation.messages)
     
     await callback.message.edit_text(
         text=post_creation_texts.picked_target_channel(channel.title),
@@ -52,29 +50,35 @@ async def get_channel_id(callback: CallbackQuery, state: FSMContext):
     
 
 @router.message(PostCreation.messages)
-@media_group_handler
+@media_group_handler(only_album=False)
 async def get_messages_media_group(messages: list[Message], state: FSMContext):
     messages_ids = [message.message_id for message in messages]
     await state.update_data({"messages": messages_ids})
+    if len(messages) > 1:
+        await messages[0].answer(
+            text=post_creation_texts.got_media_group()
+        )
+        await state.set_state(PostCreation.send_without_notification)
     
-    await messages[0].answer(
-        text=post_creation_texts.got_media_group()
-    )
-    await state.set_state(PostCreation.send_without_notification)
-    
-    await messages[0].answer(
-        text=post_creation_texts.pick_without_notification(),
-        reply_markup=PostCreationInlineKeyboard.pick_without_notification()
-    )
-
-@router.message(PostCreation.messages)
-async def get_one_message(message: Message, state: FSMContext):
-    await state.update_data({"messages": [message.message_id]})
-    await state.set_state(PostCreation.button_type)
-    await message.answer(
+        await messages[0].answer(
+            text=post_creation_texts.pick_without_notification(),
+            reply_markup=PostCreationInlineKeyboard.pick_without_notification()
+        )
+    else:
+        await state.set_state(PostCreation.button_type)
+        await messages[0].answer(
         text=post_creation_texts.pick_button_type(),
         reply_markup=PostCreationInlineKeyboard.pick_button_type()
     )
+
+# @router.message(PostCreation.messages)
+# async def get_one_message(message: Message, state: FSMContext):
+#     await state.update_data({"messages": [message.message_id]})
+#     await state.set_state(PostCreation.button_type)
+#     await message.answer(
+#         text=post_creation_texts.pick_button_type(),
+#         reply_markup=PostCreationInlineKeyboard.pick_button_type()
+#     )
 
 
 @router.callback_query(F.data.startswith("button-type_"))
@@ -106,7 +110,7 @@ async def pick_button_type(callback: CallbackQuery, state: FSMContext):
 
 @router.message(PostCreation.button_subscribed_text)
 async def get_button_subscribed_text(message: Message, state: FSMContext):
-    await state.update_data({"button_subscribed_text": message.text.split()})
+    await state.update_data({"button_subscribed_text": message.text.strip()})
     await state.set_state(PostCreation.button_unsubscribed_text)
     
     await message.answer(
@@ -117,7 +121,7 @@ async def get_button_subscribed_text(message: Message, state: FSMContext):
 
 @router.message(PostCreation.button_unsubscribed_text)
 async def get_button_unsubscribed_text(message: Message, state: FSMContext):
-    await state.update_data({"button_unsubscribed_text": message.text.split()})
+    await state.update_data({"button_unsubscribed_text": message.text.strip()})
     await state.set_state(PostCreation.button_label)
     
     await message.answer(
@@ -128,10 +132,7 @@ async def get_button_unsubscribed_text(message: Message, state: FSMContext):
 
 @router.message(PostCreation.button_url)
 async def get_button_url(message: Message, state: FSMContext):
-    if not(is_url(message.text.split())):
-        await message.answer(post_creation_texts.invalid_url())
-        return
-    await state.update_data({"button_url": message.text.split()})
+    await state.update_data({"button_url": message.text.strip()})
     await state.set_state(PostCreation.button_label)
     
     await message.answer(
@@ -142,7 +143,7 @@ async def get_button_url(message: Message, state: FSMContext):
 
 @router.message(PostCreation.button_label)
 async def get_button_label(mesage: Message, state: FSMContext):
-    await state.update_data({"button_label": mesage.text.split()})
+    await state.update_data({"button_label": mesage.text.strip()})
     await state.set_state(PostCreation.send_without_notification)
     
     await mesage.answer(
@@ -156,7 +157,7 @@ async def pick_without_notification(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     
     send_without_notification = True if callback.data.split("_")[-1] == "yes" else False
-
+    await state.update_data({"send_without_notification": send_without_notification})
     
     await callback.message.edit_text(
         text=post_creation_texts.picked_without_notification(send_without_notification),
@@ -176,7 +177,7 @@ async def get_post_datetime(message: Message, state: FSMContext):
         return
     post_datetime = datetime.strptime(message.text.strip(), "%d.%m.%Y %H:%M")
     
-    await state.update_data({"post_datetime": post_datetime})
+    await state.update_data({"post_datetime": post_datetime.timestamp()})
     await state.set_state(PostCreation.delete_datetime)
     
     await message.answer(
@@ -240,7 +241,7 @@ async def save_post(callback: CallbackQuery, state: FSMContext):
         reply_markup=None
     )
     
-    await bot_loader.scheduler.add_job(
+    bot_loader.scheduler.add_job(
         id=f"send-post_{created_post.id}",
         func=scheduled_post,
         args=[created_post.id],

@@ -3,7 +3,6 @@ from aiogram.types.chat_member_left import ChatMemberLeft
 from aiogram.types.chat_member_administrator import ChatMemberAdministrator
 from aiogram.types.chat_member_owner import ChatMemberOwner
 from aiogram.types import Chat
-import validators
 
 
 async def is_subscribed(user_id: int, channel_id: int) -> bool:
@@ -29,9 +28,3 @@ async def check_channel(channel_id: int) -> Chat | None:
  
     except:
         return None
-    
-    
-def is_url(row: str) -> bool:
-    if not validators.url(row):
-        return False
-    return True

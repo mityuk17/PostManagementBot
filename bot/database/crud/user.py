@@ -1,7 +1,6 @@
 from botloader import bot_loader
 from schemas import User
 from sqlmodel import select
-from datetime import datetime
 
 
 async def create_user(user_data: User) -> User:

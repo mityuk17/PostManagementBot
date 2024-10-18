@@ -7,7 +7,7 @@ class Post(SQLModel, table=True):
     __tablename__ = "posts"
     
     id: int = Field(default=None, primary_key=True)
-    messages: int = Field(sa_column=ARRAY(BigInteger()))
+    messages: list[int] = Field(sa_column=Column(ARRAY(BigInteger())))
     created_by: int = Field(sa_column=Column(BigInteger(), ForeignKey("users.id")))
     target_channel_id: int = Field(sa_column=Column(BigInteger(), ForeignKey("channels.id")))
     button_label: str | None = Field(default=None)

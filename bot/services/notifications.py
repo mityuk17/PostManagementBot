@@ -1,5 +1,5 @@
 from botloader import bot_loader
-from schemas import Post, Channel
+from schemas import Post
 from database.crud.channel import get_channel
 from texts import notifications_texts
 

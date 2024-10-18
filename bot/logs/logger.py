@@ -4,8 +4,8 @@ from texts import logs_texts
 
 
 logging.basicConfig(
-    filename="bot_events.log",
-    format="%(asctime)s - %(module)s - %(levelname)s - %(funcName)s:  %(message)s"
+    format="%(asctime)s - %(module)s - %(levelname)s - %(funcName)s:  %(message)s",
+    level=logging.INFO
 )
 
 

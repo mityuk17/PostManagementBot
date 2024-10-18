@@ -5,7 +5,7 @@ from schemas import Post, Channel
 def menu() -> str:
     text = "<b>Меню</b>"
     
-    return menu
+    return text
 
 
 def post_info(post: Post, channel: Channel) -> str:

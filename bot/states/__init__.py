@@ -1,2 +1,2 @@
-from channel_management import ChannelCreation
-from post_management import PostCreation
+from states.channel_management import ChannelCreation
+from states.post_management import PostCreation

@@ -1,4 +1,3 @@
-from html import escape
 from schemas import Post, Channel
 
 

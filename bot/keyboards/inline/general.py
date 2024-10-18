@@ -76,13 +76,12 @@ def cancel(callback_data: str = "menu") -> InlineKeyboardMarkup:
 
 def post_button(post_data: Post):
     kb = InlineKeyboardBuilder()
-
     if not post_data.button_label:
         return
     
     if post_data.button_url:
         kb.button(text=post_data.button_label, url=post_data.button_url)
     elif post_data.button_subscribed_text and post_data.button_unsubscribed_text:
-        kb.button(text=post_data.button_label, callback_data=f"check-subscription_{post_data.id}")
+        kb.button(text=post_data.button_label, callback_data=f"""check-subscription_{post_data.id if post_data.id else "preview"}""")
         
-    return kb.as_markup
+    return kb.as_markup()

@@ -41,7 +41,7 @@ async def list_channels(query: InlineQuery):
         response.append(InlineQueryResultArticle(
             id=str(channel.id),
             title=channel.title,
-            input_message_content=InputTextMessageContent(f"/channel {channel.id}"),
+            input_message_content=InputTextMessageContent(message_text=f"/channel {channel.id}"),
             description=description
         ))
     
@@ -63,7 +63,7 @@ async def show_channel(message: Message):
     
     await message.reply(
         text=general_texts.channel_info(channel, user.role == UserRole.Admin),
-        reply_markup=GeneralInlineKeyboard.channel_actions(channel.channel_id, is_active=channel.active)
+        reply_markup=GeneralInlineKeyboard.channel_actions(channel.id, is_active=channel.active)
     )
     
 
@@ -81,7 +81,7 @@ async def switch_channel(callback: CallbackQuery):
     
     await callback.message.edit_text(
         text=general_texts.channel_info(channel, user.role == UserRole.Admin),
-        reply_markup=GeneralInlineKeyboard.channel_actions(channel.channel_id, is_active=channel.active)
+        reply_markup=GeneralInlineKeyboard.channel_actions(channel.id, is_active=channel.active)
     )
     
 

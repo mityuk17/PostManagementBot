@@ -1,5 +1,5 @@
 from botloader import bot_loader
-from schemas import User, Channel, Post
+from schemas import Post
 from sqlmodel import select, delete
 from datetime import datetime
 

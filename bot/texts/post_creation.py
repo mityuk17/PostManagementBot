@@ -9,6 +9,8 @@ def pick_target_channel() -> str:
 
 def picked_target_channel(title: str) -> str:
     text = f"Канал для постинга: {escape(title)}"
+    
+    return text
 
 
 def get_messages() -> str:
@@ -19,6 +21,8 @@ def get_messages() -> str:
 
 def got_media_group() -> str:
     text = "❗️Получена группа медиа, добавление кнопки к посту отключено."
+
+    return text
 
 
 def pick_button_type() -> str:

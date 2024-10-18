@@ -1,30 +1,23 @@
+from datetime import datetime, timedelta
 from schemas import Post
 from botloader import bot_loader
-from aiogram.utils.media_group import MediaGroupBuilder
+
 from database.crud.channel import get_channel
 from database.crud.post import get_post, update_post
-from keyboards import GeneralInlineKeyboard
-from datetime import timedelta
+
 from services.notifications import post_send_notification, post_delete_notification
-from datetime import datetime, timedelta
+from logs import logger
+
+from keyboards import GeneralInlineKeyboard
+
+
 
 
 def data_to_post(data: dict, user_id: int) -> Post:
-    post_datetime = datetime.strptime(data.get("post_datetime"), "%d.%m.%Y %H:%M") if data.get("post_datetime") else datetime.now()
-    delete_datetime = post_datetime + timedelta(hours=data.get("delete_hours"))
+    data["post_datetime"] = datetime.fromtimestamp(data.get("post_datetime"))
+    data["delete_datetime"] = data["post_datetime"] + timedelta(hours=data.get("delete_hours"))
 
-    new_post = Post(
-        messages=data.get("messages"),
-        created_by=user_id,
-        target_channel_id=data.get("target_channel_id"),
-        button_label=data.get("button_label"),
-        button_subscribed_text=data.get("button_subscribed_text"),
-        button_unsubscribed_text=data.get("button_unsubscribed_text"),
-        button_url=data.get("button_url"),
-        send_without_notification=data.get("with_notification"),
-        post_datetime=post_datetime,
-        delete_datetime=delete_datetime
-    )
+    new_post = Post(**data)
     
     return new_post
 
@@ -35,7 +28,7 @@ async def send_post(post: Post, chat_id: int) -> list[int]:
         messages = await bot_loader.tg_bot.copy_messages(
             chat_id=chat_id,
             from_chat_id=post.created_by,
-            message_ids=post.messages,
+            message_ids=sorted(post.messages),
             disable_notification=post.send_without_notification
         )
     else:
@@ -49,7 +42,7 @@ async def send_post(post: Post, chat_id: int) -> list[int]:
         messages.append(message_id)
     
     if not messages:
-        ...
+        logger.no_messages_copied(post)
     
     return messages
 
@@ -71,7 +64,7 @@ async def scheduled_post(post_id):
     await update_post(post)
     
     if post.delete_datetime:
-        await bot_loader.scheduler.add_job(
+        bot_loader.scheduler.add_job(
             id=f"delete-post_{post_id}",
             func=autodelete_post,
             args=[post_id, messages],
@@ -94,4 +87,5 @@ async def autodelete_post(post_id: int, messages_ids: int):
     await post_delete_notification(post)
     
     
-    
+async def cancel_posting(post_id: int):
+    bot_loader.scheduler.remove_job(job_id=f"send-post_{post_id}")

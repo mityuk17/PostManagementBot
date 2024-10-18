@@ -1,7 +1,6 @@
 from botloader import bot_loader
-from schemas import User, Channel, Post
+from schemas import Channel
 from sqlmodel import select, delete, update
-from datetime import datetime
 
 
 async def create_channel(channel_data: Channel) -> Channel:

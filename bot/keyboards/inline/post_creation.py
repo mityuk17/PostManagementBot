@@ -41,7 +41,7 @@ def pick_without_notification() -> InlineKeyboardMarkup:
 def pick_delete_datetime() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     for t in [1, 6, 12, 24, 48, 72]:
-        kb.button(text=f"{t}ч.", callback_data="delete-datetime_{t}")
+        kb.button(text=f"{t}ч.", callback_data=f"delete-datetime_{t}")
     kb.button(text="Без удаления", callback_data="delete-datetime_no")
     kb.button(text="❌Отмена", callback_data="menu")
     

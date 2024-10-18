@@ -3,7 +3,6 @@ import os
 
 class BotConfig(BaseSettings):
     TELEGRAM_BOT_API_TOKEN: str
-    TELEGRAM_BOT_USERNAME: str
 
     POSTGRES_HOST: str
     POSTGRES_PORT: int

@@ -2,3 +2,4 @@
 /pgdata
 /redisdata
 /venv
+bot_events.log
